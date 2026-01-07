@@ -80,8 +80,9 @@ Task B is all about ZenStack access policies. We strongly recommend spending 15-
    - Complete reference for schema syntax
    - Field types, attributes, and functions
 
-3. **[ZenStack Quick Start](https://zenstack.dev/docs/2.x/quick-start)**
+3. **[ZenStack Quick Start (Next.js App Router)](https://zenstack.dev/docs/2.x/quick-start/nextjs-app-router)**
    - Overview of how ZenStack enhances Prisma
+   - Step-by-step guide for Next.js App Router projects
 
 **Key concepts you need to understand:**
 - ✅ How `@@allow('operation', condition)` rules work
