@@ -5,7 +5,7 @@ import { TaskListHeader } from './components/task-list-header';
 import { TaskFilters } from '@/components/task-filters';
 import { redirect } from 'next/navigation';
 
-// Decided to use maintian category filter state via Search Params
+// Decided to use maintain category filter state via Search Params
 // to avoid eslint complains about useState in async
 
 type DashboardPageProps = {

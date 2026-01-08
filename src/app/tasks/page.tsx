@@ -5,7 +5,7 @@ import { TaskFilters } from '@/components/task-filters';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 
-// Decided to use maintian category filter state via Search Params
+// Decided to use maintain category filter state via Search Params
 // to avoid eslint complains about useState in async
 
 type TasksPageProps = {
