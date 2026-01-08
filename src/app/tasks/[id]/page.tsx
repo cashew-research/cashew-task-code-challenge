@@ -103,7 +103,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
             </div>
 
             {/* Warning for interns - will be visible in broken state */}
-            {!isOwner && (
+            {!isOwner && !task.isPublic && (
               <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <p className="text-sm font-medium text-destructive mb-1">
                   🚨 Security Issue
