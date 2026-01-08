@@ -24,6 +24,7 @@ model Task {
   completed   Boolean  @default(false)
   // TODO (Task A): Add an optional category field here (String?)
   category    String?
+  isPublic    Boolean?
   authorId    String
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
@@ -34,7 +35,7 @@ model Task {
   // Hint: Use @@allow('read', ...), @@allow('create', ...), @@allow('update', ...), @@allow('delete', ...)
   // Hint: The auth() function gives you the current logged-in user
   // Hint: You can check ownership with: auth() == author
-  @@allow('read',    auth() == author)
+  @@allow('read',    auth() == author || isPublic)
   @@allow('create',  auth() == author)
   @@allow('update',  auth() == author)
   @@allow('delete',  auth() == author)
