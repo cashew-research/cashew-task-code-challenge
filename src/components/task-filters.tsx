@@ -11,6 +11,14 @@ import {
 import { Label } from './ui/label';
 import { Search } from 'lucide-react';
 import { TASK_CATEGORIES } from '@/lib/categories';
+import { redirect, useSearchParams } from 'next/navigation';
+
+// Decided to use maintian category filter state via Search Params
+// to avoid eslint complains about useState in async
+
+type TaskFiltersProps = {
+  currentCategory?: string;
+};
 
 /**
  * TaskFilters Component
@@ -19,11 +27,19 @@ import { TASK_CATEGORIES } from '@/lib/categories';
  * The UI is here, but it doesn't actually filter tasks yet.
  * You'll need to lift state up to the parent component and pass tasks as a prop.
  */
-export function TaskFilters() {
+export function TaskFilters({ currentCategory }: TaskFiltersProps) {
   // The filter UI is implemented, but not wired up yet
   // Hint: You'll need useState to manage the selected category
   // Hint: Pass the selected category back to the parent to filter the tasks
+  const searchParams = useSearchParams();
 
+  const handleCategoryChange = (category: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (category) params.set('category', category);
+    else params.delete('category');
+    redirect(`?${params.toString()}`);
+  };
+  
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
       <div className="flex-1">
@@ -44,7 +60,7 @@ export function TaskFilters() {
         <Label htmlFor="category-filter" className="sr-only">
           Filter by category
         </Label>
-        <Select defaultValue="all">
+        <Select defaultValue="all" value={currentCategory} onValueChange={handleCategoryChange}>
           <SelectTrigger id="category-filter">
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
@@ -61,4 +77,5 @@ export function TaskFilters() {
     </div>
   );
 }
+
 

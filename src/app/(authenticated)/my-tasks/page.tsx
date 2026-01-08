@@ -5,19 +5,34 @@ import { TaskListHeader } from './components/task-list-header';
 import { TaskFilters } from '@/components/task-filters';
 import { redirect } from 'next/navigation';
 
-export default async function DashboardPage() {
+// Decided to use maintian category filter state via Search Params
+// to avoid eslint complains about useState in async
+
+type DashboardPageProps = {
+  searchParams?: {
+    category?: string;
+  };
+};
+
+export default async function DashboardPage(props: DashboardPageProps) {
   const currentUser = await getCurrentUser();
   
   // Redirect to home/login if not authenticated
   if (!currentUser) {
     redirect('/');
   }
+
+  const searchParams = await props.searchParams;
+  const category = searchParams?.category || '';
   
   const db = await getEnhancedDb();
   // TODO (Task B): Currently this query returns ALL tasks from ALL users
   // After you fix the access control in schema.zmodel, this will automatically
   // only return tasks belonging to the current user (thanks to ZenStack)
   const tasks = await db.task.findMany({
+    where: {
+      category: category && category !== 'all' ? category : undefined,
+    },
     orderBy: { createdAt: 'desc' },
     include: { author: true },
   });
@@ -43,7 +58,7 @@ export default async function DashboardPage() {
 
         {/* Filters Section - Fixed */}
         <div className="shrink-0">
-          <TaskFilters />
+          <TaskFilters currentCategory={category} />
         </div>
 
         {/* Scrollable Task List */}
@@ -64,4 +79,5 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
 

@@ -5,13 +5,28 @@ import { TaskFilters } from '@/components/task-filters';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 
-export default async function TasksPage() {
+// Decided to use maintian category filter state via Search Params
+// to avoid eslint complains about useState in async
+
+type TasksPageProps = {
+  searchParams?: {
+    category?: string;
+  };
+};
+
+export default async function TasksPage(props: TasksPageProps) {
   const db = await getEnhancedDb();
   
+  const searchParams = await props.searchParams;
+  const category = searchParams?.category || '';
+
   // TODO (Task B - Bonus): This page currently shows ALL tasks
   // After you add the isPublic field and fix access control in schema.zmodel,
   // this page will automatically only show public tasks (thanks to ZenStack)
   const tasks = await db.task.findMany({
+    where: {
+      category: category && category !== 'all' ? category : undefined,
+    },
     orderBy: { createdAt: 'desc' },
     include: { author: true },
   });
@@ -29,7 +44,7 @@ export default async function TasksPage() {
 
         {/* Filters Section */}
         <div className="shrink-0">
-          <TaskFilters />
+          <TaskFilters currentCategory={category} />
         </div>
 
         {/* Task List */}
@@ -54,7 +69,7 @@ export default async function TasksPage() {
                           </p>
                         )}
                         <div className="mt-2">
-                          <CategoryBadge />
+                          <CategoryBadge category={task.category}/>
                         </div>
                       </div>
                       {task.completed && (
