@@ -32,6 +32,7 @@ export default async function DashboardPage(props: DashboardPageProps) {
   const tasks = await db.task.findMany({
     where: {
       category: category && category !== 'all' ? category : undefined,
+      authorId: currentUser.id
     },
     orderBy: { createdAt: 'desc' },
     include: { author: true },
