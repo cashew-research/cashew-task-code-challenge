@@ -34,6 +34,7 @@ export function TaskFilters({ currentCategory }: TaskFiltersProps) {
   const searchParams = useSearchParams();
 
   const handleCategoryChange = (category: string | null) => {
+    // This is to update the category URL param which maintains the state for category filter
     const params = new URLSearchParams(searchParams.toString());
     if (category) params.set('category', category);
     else params.delete('category');
