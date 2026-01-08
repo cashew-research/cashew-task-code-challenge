@@ -25,6 +25,7 @@ model Task {
   title       String
   description String?
   completed   Boolean  @default(false)
+  category    String?
   authorId    String
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
