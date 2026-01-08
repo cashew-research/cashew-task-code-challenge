@@ -28,6 +28,33 @@ export async function createTask(data: {
   return { success: true, task };
 }
 
+export async function updateTask(data: {
+  id: string;
+  title: string; 
+  description?: string;
+  category?: string;
+}) {
+  const db = await getEnhancedDb();
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+  
+  const task = await db.task.update({
+    data: {
+      ...data,
+      authorId: user.id,
+    },
+    where: {
+      id: data.id,
+    },
+  });
+  
+  revalidatePath('/my-tasks');
+  return { success: true, task };
+}
+
 export async function deleteTask(taskId: string) {
   const db = await getEnhancedDb();
   
