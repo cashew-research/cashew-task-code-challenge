@@ -34,5 +34,8 @@ model Task {
   // Hint: Use @@allow('read', ...), @@allow('create', ...), @@allow('update', ...), @@allow('delete', ...)
   // Hint: The auth() function gives you the current logged-in user
   // Hint: You can check ownership with: auth() == author
-  @@allow('all', true)
+  @@allow('read',    auth() == author)
+  @@allow('create',  auth() == author)
+  @@allow('update',  auth() == author)
+  @@allow('delete',  auth() == author)
 }
