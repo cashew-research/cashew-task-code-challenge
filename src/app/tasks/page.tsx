@@ -1,32 +1,17 @@
 import { getEnhancedDb } from '@/lib/db';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CategoryBadge } from '@/components/category-badge';
-import { TaskFilters } from '@/components/task-filters';
-import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
+import { TaskListBody } from '../(authenticated)/my-tasks/components/task-list';
 
-// Decided to use maintain category filter state via Search Params
-// to avoid eslint complains about useState in async
+// Ditched search params and implemented standalone component (TaskListBody)
+// to handle the useState hook connecting both TaskFilter and task rendering.
+// Reason depending on search or url params require more uncessary db queries per filter
 
-type TasksPageProps = {
-  searchParams?: {
-    category?: string;
-  };
-};
-
-export default async function TasksPage(props: TasksPageProps) {
+export default async function TasksPage() {
   const db = await getEnhancedDb();
-  
-  const searchParams = await props.searchParams;
-  const category = searchParams?.category || '';
 
   // TODO (Task B - Bonus): This page currently shows ALL tasks
   // After you add the isPublic field and fix access control in schema.zmodel,
   // this page will automatically only show public tasks (thanks to ZenStack)
   const tasks = await db.task.findMany({
-    where: {
-      category: category && category !== 'all' ? category : undefined,
-    },
     orderBy: { createdAt: 'desc' },
     include: { author: true },
   });
@@ -42,13 +27,15 @@ export default async function TasksPage(props: TasksPageProps) {
           </p>
         </div>
 
+        <TaskListBody currentUser={null} tasks={tasks} />
+
         {/* Filters Section */}
-        <div className="shrink-0">
+        {/* <div className="shrink-0">
           <TaskFilters currentCategory={category} />
-        </div>
+        </div> */}
 
         {/* Task List */}
-        <div className="flex-1 overflow-y-auto -mx-4 px-4">
+        {/* <div className="flex-1 overflow-y-auto -mx-4 px-4">
           <div className="space-y-4 pb-4">
             {tasks.length === 0 ? (
               <p className="text-muted-foreground text-center py-12">
@@ -109,7 +96,7 @@ export default async function TasksPage(props: TasksPageProps) {
               ))
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

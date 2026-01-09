@@ -1,20 +1,14 @@
 import { getEnhancedDb } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-server';
-import { TaskCard } from './components/task-card';
 import { TaskListHeader } from './components/task-list-header';
-import { TaskFilters } from '@/components/task-filters';
 import { redirect } from 'next/navigation';
+import { TaskListBody } from './components/task-list';
 
-// Decided to use maintain category filter state via Search Params
-// to avoid eslint complains about useState in async
+// Ditched search params and implemented standalone component (TaskListBody)
+// to handle the useState hook connecting both TaskFilter and task rendering.
+// Reason depending on search or url params require more uncessary db queries per filter
 
-type DashboardPageProps = {
-  searchParams?: {
-    category?: string;
-  };
-};
-
-export default async function DashboardPage(props: DashboardPageProps) {
+export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
   
   // Redirect to home/login if not authenticated
@@ -22,16 +16,12 @@ export default async function DashboardPage(props: DashboardPageProps) {
     redirect('/');
   }
 
-  const searchParams = await props.searchParams;
-  const category = searchParams?.category || '';
-  
   const db = await getEnhancedDb();
   // TODO (Task B): Currently this query returns ALL tasks from ALL users
   // After you fix the access control in schema.zmodel, this will automatically
   // only return tasks belonging to the current user (thanks to ZenStack)
   const tasks = await db.task.findMany({
     where: {
-      category: category && category !== 'all' ? category : undefined,
       authorId: currentUser.id
     },
     orderBy: { createdAt: 'desc' },
@@ -57,25 +47,7 @@ export default async function DashboardPage(props: DashboardPageProps) {
           <TaskListHeader taskCount={tasks.length} userCount={userCount} />
         </div>
 
-        {/* Filters Section - Fixed */}
-        <div className="shrink-0">
-          <TaskFilters currentCategory={category} />
-        </div>
-
-        {/* Scrollable Task List */}
-        <div className="flex-1 overflow-y-auto -mx-4 px-4">
-          <div className="space-y-4 pb-4">
-            {tasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-12">
-                No tasks yet. Click New Task to create your first task!
-              </p>
-            ) : (
-              tasks.map((task: typeof tasks[number]) => (
-                <TaskCard key={task.id} task={task} currentUserId={currentUser.id} />
-              ))
-            )}
-          </div>
-        </div>
+        <TaskListBody currentUser={currentUser} tasks={tasks} />
       </div>
     </div>
   );
