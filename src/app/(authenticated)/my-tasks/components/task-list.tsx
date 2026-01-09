@@ -1,7 +1,7 @@
 'use client';
 
 import { TaskFilters } from "@/components/task-filters";
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { TaskCard } from "./task-card";
 import { CategoryBadge } from "@/components/category-badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -35,15 +35,32 @@ type TaskListBodyProps = {
 
 export function TaskListBody({ currentUser, tasks }: TaskListBodyProps) {
   const [category, setCategory] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredTasks = category == 'all' ? tasks : tasks.filter((task: typeof tasks[number]) => task.category == category)
+  const categoryFilteredTasks = category == 'all' ? 
+    tasks : tasks.filter((task: typeof tasks[number]) => task.category == category)
+
+  // Used deferred hook and memo hook to avoid lags with seach bar typing when list is big
+  const deferredSearch = useDeferredValue(searchTerm);
+  const searchFilteredTasks = useMemo(
+    () => deferredSearch == '' ? 
+    categoryFilteredTasks : 
+    categoryFilteredTasks.filter(
+        (task: typeof tasks[number]) => task.title.toLowerCase().includes(deferredSearch.toLowerCase())),
+    [categoryFilteredTasks, deferredSearch]);
+
 
   // Returns authenticated task list of authenticated page else the unauthenticed for the opposite
   return (
     <>
      {/* Filters Section - Fixed */}
         <div className="shrink-0">
-            <TaskFilters currentCategory={category} handleCategoryChange={setCategory}/>
+            <TaskFilters 
+                currentCategory={category} 
+                handleCategoryChange={setCategory}
+                currentSearchTerm={searchTerm} 
+                handleSearchTermChange={setSearchTerm}
+            />
         </div>
 
         { currentUser ? (
@@ -51,12 +68,12 @@ export function TaskListBody({ currentUser, tasks }: TaskListBodyProps) {
             {/* Scrollable Task List */}
             <div className="flex-1 overflow-y-auto -mx-4 px-4">
                 <div className="space-y-4 pb-4">
-                {filteredTasks.length === 0 ? (
+                {searchFilteredTasks.length === 0 ? (
                     <p className="text-muted-foreground text-center py-12">
                     No tasks yet. Click New Task to create your first task!
                     </p>
                 ) : (
-                    filteredTasks.map((task: typeof filteredTasks[number]) => (
+                    searchFilteredTasks.map((task: typeof tasks[number]) => (
                     <TaskCard key={task.id} task={task} currentUserId={currentUser.id} />
                     ))
                 )}
@@ -68,12 +85,12 @@ export function TaskListBody({ currentUser, tasks }: TaskListBodyProps) {
                 {/* Task List */}
                 <div className="flex-1 overflow-y-auto -mx-4 px-4">
                 <div className="space-y-4 pb-4">
-                    {filteredTasks.length === 0 ? (
+                    {searchFilteredTasks.length === 0 ? (
                     <p className="text-muted-foreground text-center py-12">
                         No tasks available yet.
                     </p>
                     ) : (
-                    filteredTasks.map((task: typeof filteredTasks[number]) => (
+                    searchFilteredTasks.map((task: typeof tasks[number]) => (
                         <Card key={task.id} className={task.completed ? 'opacity-60' : ''}>
                         <CardHeader className="pb-3">
                             <div className="flex items-start justify-between gap-4">

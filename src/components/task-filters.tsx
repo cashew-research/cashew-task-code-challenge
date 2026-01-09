@@ -15,6 +15,8 @@ import { TASK_CATEGORIES, TaskCategory } from '@/lib/categories';
 type TaskFiltersProps = {
   currentCategory: string;
   handleCategoryChange:  React.Dispatch<React.SetStateAction<string>>;
+  currentSearchTerm: string;
+  handleSearchTermChange:  React.Dispatch<React.SetStateAction<string>>;
 };
 
 /**
@@ -24,7 +26,7 @@ type TaskFiltersProps = {
  * The UI is here, but it doesn't actually filter tasks yet.
  * You'll need to lift state up to the parent component and pass tasks as a prop.
  */
-export function TaskFilters({ currentCategory, handleCategoryChange }: TaskFiltersProps) {
+export function TaskFilters({ currentCategory, handleCategoryChange, currentSearchTerm, handleSearchTermChange }: TaskFiltersProps) {
   // The filter UI is implemented, but not wired up yet
   // Hint: You'll need useState to manage the selected category
   // Hint: Pass the selected category back to the parent to filter the tasks
@@ -41,7 +43,8 @@ export function TaskFilters({ currentCategory, handleCategoryChange }: TaskFilte
             id="search"
             placeholder="Search tasks..."
             className="pl-10"
-            disabled
+            value={currentSearchTerm}
+            onChange={(e) => handleSearchTermChange(e.target.value)}
           />
         </div>
       </div>
