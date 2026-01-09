@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Pencil } from 'lucide-react';
-import { TASK_CATEGORIES } from '@/lib/categories';
+import { TASK_CATEGORIES, TaskCategory } from '@/lib/categories';
 import { toast } from 'sonner';
 import { updateTask } from '../actions';
 import { z } from 'zod';
@@ -60,6 +60,7 @@ const updateTaskSchema = z.object({
  * TODO (Stretch Goal): Add optimistic UI updates
  */
 export function EditTaskDialog({ task }: EditTaskDialogProps) {
+  // This is for opitmistic UI updates
   const [optimisticTask, setOptimisticTask] = useOptimistic(
     task,
     (_state, newTask: Task) => newTask
@@ -89,7 +90,7 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
         const validatedData = updateTaskSchema.parse({ title, description, category });
         // There was a mismatch for description type (undfined vs. null) 
         // not sure if I can keep changing other components for this so I
-        // handle it here for now.
+        // handled it here for now.
         setOptimisticTask({
           ...optimisticTask,
           title: validatedData.title.trim(),
@@ -165,9 +166,9 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {TASK_CATEGORIES.map((category: TaskCategory) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
                     </SelectItem>
                   ))}
                 </SelectContent>

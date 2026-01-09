@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { createTask } from '../actions';
 import { toast } from 'sonner';
-import { TASK_CATEGORIES } from '@/lib/categories';
+import { TASK_CATEGORIES, TaskCategory } from '@/lib/categories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function CreateTaskDialog() {
@@ -103,9 +103,9 @@ export function CreateTaskDialog() {
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {TASK_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                {TASK_CATEGORIES.map((category: TaskCategory) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
                   </SelectItem>
                 ))}
               </SelectContent>

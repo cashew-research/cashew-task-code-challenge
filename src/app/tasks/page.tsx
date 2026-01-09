@@ -3,7 +3,7 @@ import { TaskListBody } from '../(authenticated)/my-tasks/components/task-list';
 
 // Ditched search params and implemented standalone component (TaskListBody)
 // to handle the useState hook connecting both TaskFilter and task rendering.
-// Reason depending on search or url params require more uncessary db queries per filter
+// Reason: depending on search or url params require more uncessary db queries per filter
 
 export default async function TasksPage() {
   const db = await getEnhancedDb();

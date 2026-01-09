@@ -50,7 +50,6 @@ export function TaskListBody({ currentUser, tasks }: TaskListBodyProps) {
     [categoryFilteredTasks, deferredSearch]);
 
 
-  // Returns authenticated task list of authenticated page else the unauthenticed for the opposite
   return (
     <>
      {/* Filters Section - Fixed */}
@@ -63,6 +62,7 @@ export function TaskListBody({ currentUser, tasks }: TaskListBodyProps) {
             />
         </div>
 
+        {/* Returns authenticated task list of authenticated page else the unauthenticed for the opposite */}
         { currentUser ? (
             <>
             {/* Scrollable Task List */}

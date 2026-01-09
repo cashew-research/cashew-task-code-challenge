@@ -11,6 +11,7 @@ import {
 import { Label } from './ui/label';
 import { Search } from 'lucide-react';
 import { TASK_CATEGORIES, TaskCategory } from '@/lib/categories';
+import { ChangeEvent } from 'react';
 
 type TaskFiltersProps = {
   currentCategory: string;
@@ -44,7 +45,7 @@ export function TaskFilters({ currentCategory, handleCategoryChange, currentSear
             placeholder="Search tasks..."
             className="pl-10"
             value={currentSearchTerm}
-            onChange={(e) => handleSearchTermChange(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => handleSearchTermChange(e.target.value)}
           />
         </div>
       </div>
@@ -62,7 +63,7 @@ export function TaskFilters({ currentCategory, handleCategoryChange, currentSear
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {TASK_CATEGORIES.map((category) => (
+            {TASK_CATEGORIES.map((category: TaskCategory) => (
               <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>
