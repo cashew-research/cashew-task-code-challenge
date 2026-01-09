@@ -1,9 +1,12 @@
 import { getEnhancedDb } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth-server';
-import { TaskCard } from './components/task-card';
 import { TaskListHeader } from './components/task-list-header';
-import { TaskFilters } from '@/components/task-filters';
 import { redirect } from 'next/navigation';
+import { TaskListBody } from './components/task-list';
+
+// Ditched search params and implemented standalone component (TaskListBody)
+// to handle the useState hook connecting both TaskFilter and task rendering.
+// Reason: depending on search or url params require more uncessary db queries per filter
 
 export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
@@ -12,12 +15,15 @@ export default async function DashboardPage() {
   if (!currentUser) {
     redirect('/');
   }
-  
+
   const db = await getEnhancedDb();
   // TODO (Task B): Currently this query returns ALL tasks from ALL users
   // After you fix the access control in schema.zmodel, this will automatically
   // only return tasks belonging to the current user (thanks to ZenStack)
   const tasks = await db.task.findMany({
+    where: {
+      authorId: currentUser.id
+    },
     orderBy: { createdAt: 'desc' },
     include: { author: true },
   });
@@ -41,27 +47,10 @@ export default async function DashboardPage() {
           <TaskListHeader taskCount={tasks.length} userCount={userCount} />
         </div>
 
-        {/* Filters Section - Fixed */}
-        <div className="shrink-0">
-          <TaskFilters />
-        </div>
-
-        {/* Scrollable Task List */}
-        <div className="flex-1 overflow-y-auto -mx-4 px-4">
-          <div className="space-y-4 pb-4">
-            {tasks.length === 0 ? (
-              <p className="text-muted-foreground text-center py-12">
-                No tasks yet. Click New Task to create your first task!
-              </p>
-            ) : (
-              tasks.map((task: typeof tasks[number]) => (
-                <TaskCard key={task.id} task={task} currentUserId={currentUser.id} />
-              ))
-            )}
-          </div>
-        </div>
+        <TaskListBody currentUser={currentUser} tasks={tasks} />
       </div>
     </div>
   );
 }
+
 

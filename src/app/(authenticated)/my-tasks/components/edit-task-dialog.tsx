@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,19 +22,28 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Pencil } from 'lucide-react';
-import { TASK_CATEGORIES } from '@/lib/categories';
+import { TASK_CATEGORIES, TaskCategory } from '@/lib/categories';
+import { toast } from 'sonner';
+import { updateTask } from '../actions';
+import { z } from 'zod';
 
 type Task = {
   id: string;
   title: string;
   description: string | null;
   completed: boolean;
-  // category?: string | null; // TODO: Uncomment after Task A
+  category?: string | null; // TODO: Uncomment after Task A
 };
 
 type EditTaskDialogProps = {
   task: Task;
 };
+
+const updateTaskSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  category: z.enum(['Work', 'Personal', 'Shopping', 'Health', 'Learning', 'Other']).optional(),
+});
 
 /**
  * EditTaskDialog Component
@@ -51,10 +60,17 @@ type EditTaskDialogProps = {
  * TODO (Stretch Goal): Add optimistic UI updates
  */
 export function EditTaskDialog({ task }: EditTaskDialogProps) {
+  // This is for opitmistic UI updates
+  const [optimisticTask, setOptimisticTask] = useOptimistic(
+    task,
+    (_state, newTask: Task) => newTask
+  );
+
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description || '');
-  const [category, setCategory] = useState<string>(''); // TODO: Initialize from task.category
+  const [isPending, startTransition] = useTransition();
+  const [title, setTitle] = useState(optimisticTask.title);
+  const [description, setDescription] = useState(optimisticTask.description || '');
+  const [category, setCategory] = useState<string>(optimisticTask.category || ''); // TODO: Initialize from task.category
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,14 +84,35 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
     //   category,
     // });
     
-    console.log('TODO: Implement task update with category:', {
-      id: task.id,
-      title,
-      description,
-      category,
+
+    startTransition(async () => {
+      try {
+        const validatedData = updateTaskSchema.parse({ title, description, category });
+        // There was a mismatch for description type (undfined vs. null) 
+        // not sure if I can keep changing other components for this so I
+        // handled it here for now.
+        setOptimisticTask({
+          ...optimisticTask,
+          title: validatedData.title.trim(),
+          description: validatedData.description?.trim() || null,
+          category: validatedData.category?.trim() || undefined
+        });
+        await updateTask({
+          id: optimisticTask.id,
+          title: validatedData.title.trim(),
+          description: validatedData.description?.trim() || undefined,
+          category: validatedData.category?.trim() || undefined
+        });
+        setOpen(false);
+        toast.success('Task updated successfully');
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          error.errors.forEach((e) => toast.error(e.message));
+        } else {
+          toast.error('Failed to update task. Please try again.');
+        } 
+      }
     });
-    
-    setOpen(false);
   };
 
   return (
@@ -102,6 +139,7 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Task title"
+                disabled={isPending}
                 required
               />
             </div>
@@ -112,24 +150,25 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Task description (optional)"
+                disabled={isPending}
                 rows={3}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">
                 Category
-                <span className="text-xs text-muted-foreground ml-2">
+                {/* <span className="text-xs text-muted-foreground ml-2">
                   (TODO: Wire up to server action)
-                </span>
+                </span> */}
               </Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={setCategory} disabled={isPending}>
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {TASK_CATEGORIES.map((category: TaskCategory) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -137,10 +176,12 @@ export function EditTaskDialog({ task }: EditTaskDialogProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Updating...' : 'Save Changes'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
